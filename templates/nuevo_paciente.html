@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agregar pacientes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input[type="text"], input[type="number"] {
+            width: 200px;
+            padding: 5px;
+            margin-top: 5px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 8px 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Agregar paciente</h1>
+    <form method="post">
+        <label for="nombre">Nombre</label>
+        <input type="text" name="nombre" id="nombre"> <!-- 'name' define la clave del dato enviado-->
+        <br>
+        <!-- Campo para la edad del paciente-->
+        <label for="edad">Edad</label>
+        <input type="number" name="edad" id="edad"> <!-- 'edad' define la clave del dato enviado-->
+        <!-- Campo para el diagnóstico del paciente-->
+         <label for="diagnostico">Diagnóstico</label>
+        <input type="text" name="diagnostico" id="diagnostico"> <!-- 'diagnostico' define la clave del dato enviado-->
+        <br>
+        <!-- Botón para enviar el formulario-->
+        <button type="submit">Guardar</button>
+        <button type="reset">Restablecer</button>
+        <!-- Enlace para volver a la lista de pacientes-->
+        <a href="{{ url_for('index') }}">Volver a la lista de pacientes</a>
+    </form>
+</body>
+</html>

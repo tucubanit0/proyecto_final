@@ -1,0 +1,10 @@
+body {
+    background-image: url('1311796.png'); /* Use a relative path */
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #333;
+}

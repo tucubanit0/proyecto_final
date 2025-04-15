@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Pacientes</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <header>
+        <h1>Control de Pacientes</h1>
+    </header>
+
+    <nav>
+        <!-- Enlace a la vista de nuevo paciente -->
+        <a href="{{ url_for('nuevo_paciente') }}" class="btn">Nuevo Paciente</a>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+        <section>
+            <h2>Lista de Pacientes</h2>
+            <!-- Tabla lista de pacientes -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Edad</th>
+                        <th>Diagnóstico</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for paciente in pacientes %}
+                        <tr>
+                            <td>{{ paciente[0] }}</td>
+                            <td>{{ paciente[1] }}</td>
+                            <td>{{ paciente[2] }}</td>
+                            <td>{{ paciente[3] }}</td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3">No hay pacientes registrados.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; {{ current_year }} Control de Pacientes. Todos los derechos reservados.</p>
+    </footer>
+</body>
+</html>
