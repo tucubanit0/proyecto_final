@@ -5,126 +5,143 @@ from werkzeug.exceptions import HTTPException
 import db
 from datetime import datetime
 
+# Crear carpeta de logs si no existe
+os.makedirs('logs', exist_ok=True)
 
+# Función para registrar logs
+def registrar_log(accion, detalle):
+    ruta_log = os.path.join('logs', 'actividad.txt')
+    fecha_hora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    with open(ruta_log, 'a', encoding='utf-8') as archivo:
+        archivo.write(f"[{fecha_hora}] {accion}: {detalle}\n")
 
+# Configurar Flask
 app = Flask(__name__, template_folder='d:/clase/proyecto_final/templates')
-app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')  # Use environment variable for secret key
+app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 
-# Configure logging
+# Logging general
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Initialize the database
+# Inicializar base de datos
 try:
     db.init_db()
 except Exception as e:
-    logger.error(f"Failed to initialize the database: {e}")
+    logger.error(f"Error al inicializar la base de datos: {e}")
     raise
 
+# Rutas
 @app.route('/')
 def index():
     try:
-        pacientes = db.obtener_pacientes()  # Fetch patients from the database
+        pacientes = db.obtener_pacientes()
         return render_template('index.html', pacientes=pacientes)
     except Exception as e:
-        logger.error(f"Error retrieving pacientes: {e}")
-        return render_template('error.html', message="Failed to retrieve patient data.")
+        logger.error(f"Error al obtener pacientes: {e}")
+        return render_template('error.html', message="No se pudo obtener la información de los pacientes.")
 
 @app.route('/nuevo_paciente', methods=['GET', 'POST'])
 def nuevo_paciente():
     if request.method == 'POST':
-        # Get form data
         nombre = request.form.get('nombre')
         edad = request.form.get('edad')
         diagnostico = request.form.get('diagnostico')
-        
+
         if not nombre or not edad or not diagnostico:
             flash('Todos los campos son obligatorios', 'error')
             return redirect(url_for('nuevo_paciente'))
-        
+
         try:
-            edad = int(edad)  # Validate edad as an integer
-            db.agregar_paciente(nombre, edad, diagnostico)  # Save the new patient to the database
+            edad = int(edad)
+            db.agregar_paciente(nombre, edad, diagnostico)
+            registrar_log("Nuevo paciente", f"{nombre}, {edad} años, diagnóstico: {diagnostico}")
             flash('Paciente agregado exitosamente', 'success')
             return redirect(url_for('index'))
         except ValueError:
             flash('La edad debe ser un número entero', 'error')
         except Exception as e:
-            logger.error(f"Error adding new paciente: {e}")
+            logger.error(f"Error al agregar paciente: {e}")
             flash('Error al agregar el paciente', 'error')
-        
+
         return redirect(url_for('nuevo_paciente'))
-    
-    # Render the form for GET requests
+
     return render_template('nuevo_paciente.html')
 
 @app.route('/editar_paciente/<int:id>', methods=['GET', 'POST'])
 def editar_paciente(id):
     try:
-        paciente = db.obtener_paciente_por_id(id)  # Fetch patient by ID
+        paciente = db.obtener_paciente_por_id(id)
         if not paciente:
             abort(404, description="Paciente no encontrado")
     except Exception as e:
-        logger.error(f"Error fetching paciente with ID {id}: {e}")
-        abort(500, description="Error retrieving patient data")
-    
+        logger.error(f"Error obteniendo paciente con ID {id}: {e}")
+        abort(500, description="Error obteniendo datos del paciente.")
+
     if request.method == 'POST':
-        # Get form data
         nombre = request.form.get('nombre')
         edad = request.form.get('edad')
         diagnostico = request.form.get('diagnostico')
-        
+
         if not nombre or not edad or not diagnostico:
             flash('Todos los campos son obligatorios', 'error')
             return redirect(url_for('editar_paciente', id=id))
-        
+
         try:
-            edad = int(edad)  # Validate edad as an integer
-            db.actualizar_paciente(id, nombre, edad, diagnostico)  # Update patient in the database
+            edad = int(edad)
+            db.actualizar_paciente(id, nombre, edad, diagnostico)
+            registrar_log("Editar paciente", f"ID {id} actualizado a: {nombre}, {edad} años, diagnóstico: {diagnostico}")
             flash('Paciente actualizado exitosamente', 'success')
             return redirect(url_for('index'))
         except ValueError:
             flash('La edad debe ser un número entero', 'error')
         except Exception as e:
-            logger.error(f"Error updating paciente with ID {id}: {e}")
+            logger.error(f"Error al actualizar paciente con ID {id}: {e}")
             flash('Error al actualizar el paciente', 'error')
-        
+
         return redirect(url_for('editar_paciente', id=id))
-    
+
     return render_template('editar_paciente.html', paciente=paciente)
 
-# Global error handler
-@app.errorhandler(Exception)
-def handle_exception(e):
-    if isinstance(e, HTTPException):
-        return render_template('error.html', message=e.description), e.code
-    logger.error(f"Unhandled exception: {e}")
-    return render_template('error.html', message="An unexpected error occurred."), 500
-
-@app.route('/eliminar_paciente/<int:id>', methods=['POST', 'GET'])
+@app.route('/eliminar/<int:id>', methods=['GET', 'POST'])
 def eliminar_paciente(id):
     try:
-        # Verify if the patient exists before attempting deletion
         paciente = db.obtener_paciente_por_id(id)
         if not paciente:
             flash('Paciente no encontrado.', 'error')
             return redirect(url_for('index'))
-        
-        # Perform the deletion
-        db.eliminar_paciente(id)
-        flash('Paciente eliminado correctamente.', 'success')
-    except db.DatabaseError as db_err:
-        logger.error(f"Database error while deleting paciente with ID {id}: {db_err}")
-        flash('Error de base de datos al eliminar el paciente.', 'error')
+
+        if request.method == 'POST':
+            db.eliminar_paciente(id)
+            registrar_log("Eliminar paciente", f"ID {id} eliminado.")
+            flash('Paciente eliminado correctamente.', 'success')
+            return redirect(url_for('index'))
+
+        return render_template('confirmar_eliminar.html', paciente=paciente)
     except Exception as e:
-        logger.error(f"Unexpected error while deleting paciente with ID {id}: {e}")
-        flash('Ocurrió un error inesperado al eliminar el paciente.', 'error')
-    
-    return redirect(url_for('index'))
+        logger.error(f"Error al eliminar paciente: {e}")
+        flash('Ocurrió un error al eliminar el paciente.', 'error')
+        return redirect(url_for('index'))
+
+@app.route('/logs')
+def ver_logs():
+    ruta_log = os.path.join('logs', 'actividad.txt')
+    try:
+        with open(ruta_log, "r", encoding="utf-8") as archivo:
+            lineas = archivo.readlines()
+    except FileNotFoundError:
+        lineas = ["No hay actividad registrada aún."]
+    return render_template("ver_logs.html", logs=lineas)
 
 @app.context_processor
 def inject_current_year():
     return {'current_year': datetime.now().year}
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    if isinstance(e, HTTPException):
+        return render_template('error.html', message=e.description), e.code
+    logger.error(f"Excepción no controlada: {e}")
+    return render_template('error.html', message="Ha ocurrido un error inesperado."), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=os.getenv('DEBUG', 'False') == 'True')

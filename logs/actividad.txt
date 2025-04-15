@@ -1,0 +1,2 @@
+[2025-04-15 20:58:34] Nuevo paciente: Gamby, 46 años, diagnóstico: Tos
+[2025-04-15 21:03:56] Nuevo paciente: Moon, 50 años, diagnóstico: Tos

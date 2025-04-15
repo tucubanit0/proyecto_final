@@ -41,13 +41,24 @@
     </header>
 
     <!-- Navbar -->
+    <!-- <p class="mb-0">
+        <a href="{{ url_for('ver_logs') }}">Ver historial</a>
+    </p> -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container-fluid">
-            <a href="{{ url_for('nuevo_paciente') }}" class="btn btn-success">
-                <i class="bi bi-person-plus-fill"></i> Nuevo Paciente
-            </a>
+        <div class="container-fluid d-flex justify-content-between">
+            <div>
+                <a href="{{ url_for('nuevo_paciente') }}" class="btn btn-success me-2">
+                    <i class="bi bi-person-plus-fill"></i> Nuevo Paciente
+                </a>
+                <a href="{{ url_for('ver_logs') }}" class="btn btn-outline-secondary">
+                    <i class="bi bi-clock-history"></i> Historial de Actividad
+                </a>
+            </div>
         </div>
     </nav>
+    
+    
+    
 
     <!-- Contenido principal -->
     <main class="container-fluid my-4 flex-grow-1">
