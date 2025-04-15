@@ -1,40 +1,45 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
-{% block title %}Inicio - Control de Pacientes{% endblock %}
+{% block title %}Inicio - Gestión de Pacientes{% endblock %}
 
 {% block content %}
-<section>
-    <h2 class="mb-3">Lista de Pacientes</h2>
+<section class="container-fluid">
+    <h2 class="mb-4 text-center">Lista de Pacientes</h2>
 
-    <!-- Tabla lista de pacientes -->
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Nombre</th>
-                <th>Edad</th>
-                <th>Diagnóstico</th>
-                <th colspan="2">Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for paciente in pacientes %}
-            <tr>
-                <td>{{ paciente[1] }}</td> <!-- Nombre -->
-                <td>{{ paciente[2] }}</td> <!-- Edad -->
-                <td>{{ paciente[3] }}</td> <!-- Diagnóstico -->
-                <td>
-                    <a href="{{ url_for('editar_paciente', id=paciente[0]) }}" class="btn btn-warning btn-sm">Editar</a>
-                </td>
-                <td>
-                    <a href="{{ url_for('eliminar_paciente', id=paciente[0]) }}" class="btn btn-danger btn-sm">Eliminar</a>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="5" class="text-center">No hay pacientes registrados.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover align-middle text-center">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nombre</th>
+                    <th>Edad</th>
+                    <th>Diagnóstico</th>
+                    <th colspan="2">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for paciente in pacientes %}
+                <tr>
+                    <td>{{ paciente[1] }}</td>
+                    <td>{{ paciente[2] }}</td>
+                    <td>{{ paciente[3] }}</td>
+                    <td>
+                        <a href="{{ url_for('editar_paciente', id=paciente[0]) }}" class="btn btn-warning btn-sm">
+                            <i class="bi bi-pencil-square"></i> Editar
+                        </a>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('eliminar_paciente', id=paciente[0]) }}" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro que deseas eliminar este paciente?');">
+                            <i class="bi bi-trash-fill"></i> Eliminar
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5">No hay pacientes registrados.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </section>
 {% endblock %}

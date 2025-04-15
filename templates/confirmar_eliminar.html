@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Confirmar Eliminación{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white text-center">
+                <h4><i class="bi bi-exclamation-triangle-fill"></i> Confirmar eliminación</h4>
+            </div>
+            <div class="card-body text-center">
+                <p class="fs-5">¿Estás seguro que querés eliminar al paciente <strong>{{ paciente[1] }}</strong>?</p>
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <form method="post">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash-fill"></i> Sí, eliminar
+                        </button>
+                    </form>
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left-circle"></i> Cancelar
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

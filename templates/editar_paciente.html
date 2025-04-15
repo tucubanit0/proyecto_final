@@ -1,26 +1,41 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 
 {% block title %}Editar Paciente{% endblock %}
 
 {% block content %}
-<h2 class="mb-4 text-center">Editar Paciente</h2>
-<form method="post" class="mx-auto" style="max-width: 400px;">
-    <div class="mb-3">
-        <label for="nombre" class="form-label">Nombre</label>
-        <input type="text" name="nombre" id="nombre" class="form-control" value="{{ paciente[1] }}" required>
-    </div>
+<div class="container-fluid">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <h2 class="mb-4 text-center">Editar Paciente</h2>
+            <form method="post" novalidate>
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre</label>
+                    <input type="text" name="nombre" id="nombre" class="form-control" required 
+                        value="{{ paciente[1] }}" placeholder="Ej: Juan Pérez">
+                </div>
 
-    <div class="mb-3">
-        <label for="edad" class="form-label">Edad</label>
-        <input type="number" name="edad" id="edad" class="form-control" value="{{ paciente[2] }}" required>
-    </div>
+                <div class="mb-3">
+                    <label for="edad" class="form-label">Edad</label>
+                    <input type="number" name="edad" id="edad" class="form-control" required min="0" max="120"
+                        value="{{ paciente[2] }}" placeholder="Ej: 45">
+                </div>
 
-    <div class="mb-3">
-        <label for="diagnostico" class="form-label">Diagnóstico</label>
-        <input type="text" name="diagnostico" id="diagnostico" class="form-control" value="{{ paciente[3] }}" required>
-    </div>
+                <div class="mb-3">
+                    <label for="diagnostico" class="form-label">Diagnóstico</label>
+                    <input type="text" name="diagnostico" id="diagnostico" class="form-control" required
+                        value="{{ paciente[3] }}" placeholder="Ej: Hipertensión">
+                </div>
 
-    <button type="submit" class="btn btn-success">Guardar cambios</button>
-    <a href="{{ url_for('index') }}" class="btn btn-secondary ms-2">Volver</a>
-</form>
+                <div class="d-flex justify-content-between">
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-save"></i> Guardar cambios
+                    </button>
+                    <a href="{{ url_for('index') }}" class="btn btn-outline-primary">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
