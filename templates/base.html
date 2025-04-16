@@ -35,7 +35,7 @@
     </div> -->
     
     {% if session.usuario %}
-<div class="text-end pe-3 pt-2">
+<div class="text-end pe-3 pt-1">
     <span>Usuario: {{ session.usuario }}</span> |
     <a href={{ url_for('logout') }} class="btn btn-outline-danger">Cerrar sesión</a>
 </div>
@@ -43,7 +43,7 @@
 
 
     <!-- Header -->
-    <header class="bg-primary text-white text-center py-3">
+    <header class="bg-primary text-white text-center py-2">
         <h1>Gestión de Pacientes</h1>
     </header>
 
@@ -82,7 +82,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-light text-center py-3 mt-auto">
+    <footer class="bg-light text-center py-1 mt-auto">
         <p class="mb-0">&copy; {{ current_year }} TuCubanit0. Todos los derechos reservados.</p>
     </footer>
 

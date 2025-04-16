@@ -108,3 +108,24 @@ def agregar_usuario(usuario: str, contraseña_hash: str) -> bool:
             return True
     except sqlite3.IntegrityError:
         return False
+
+@handle_db_error
+def buscar_pacientes_por_nombre(nombre: str, limit=10, offset=0):
+    conn = obtener_conexion()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    like_query = f"%{nombre}%"
+    cursor.execute("SELECT * FROM pacientes WHERE nombre LIKE ? LIMIT ? OFFSET ?", (like_query, limit, offset))
+    resultados = cursor.fetchall()
+    conn.close()
+    return resultados
+
+@handle_db_error
+def contar_pacientes_busqueda(nombre: str):
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    like_query = f"%{nombre}%"
+    cursor.execute("SELECT COUNT(*) FROM pacientes WHERE nombre LIKE ?", (like_query,))
+    total = cursor.fetchone()[0]
+    conn.close()
+    return total

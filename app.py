@@ -41,15 +41,22 @@ def index():
         por_pagina = 10
         pagina = int(request.args.get('pagina', 1))
         offset = (pagina - 1) * por_pagina
+        busqueda = request.args.get('buscar', '').strip()
 
-        pacientes = db.obtener_pacientes(limit=por_pagina, offset=offset)
-        total_pacientes = db.contar_pacientes()
+        if busqueda:
+            pacientes = db.buscar_pacientes_por_nombre(busqueda, limit=por_pagina, offset=offset)
+            total_pacientes = db.contar_pacientes_busqueda(busqueda)
+        else:
+            pacientes = db.obtener_pacientes(limit=por_pagina, offset=offset)
+            total_pacientes = db.contar_pacientes()
+
         total_paginas = (total_pacientes + por_pagina - 1) // por_pagina
 
         return render_template('index.html', pacientes=pacientes, pagina=pagina, total_paginas=total_paginas)
     except Exception as e:
-        logger.error(f"Error retrieving pacientes: {e}")
-        return render_template('error.html', message="Failed to retrieve patient data.")
+        logger.error(f"Error al obtener pacientes: {e}")
+        return render_template('error.html', message="No se pudo obtener la lista de pacientes.")
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

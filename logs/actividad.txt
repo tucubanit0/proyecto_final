@@ -4,3 +4,4 @@
 [2025-04-15 22:08:29] Eliminar paciente: ID 203 eliminado.
 [2025-04-15 22:10:05] Editar paciente: ID 2 actualizado a: Kimberly Collins, 60 años, diagnóstico: Ansiedad
 [2025-04-16 09:24:13] (Javier) Editar paciente: ID 1 actualizado a: Jason Wood, 82 años, diagnóstico: Diabetes Tipo 2
+[2025-04-16 11:57:38] (Javier) Editar paciente: ID 202 actualizado a: Gamby, 46 años, diagnóstico: Tos
