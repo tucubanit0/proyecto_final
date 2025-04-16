@@ -108,28 +108,20 @@ def nuevo_paciente():
         try:
             edad = int(edad)
             db.agregar_paciente(nombre, edad, diagnostico)
-            registrar_log("Nuevo paciente", f"{nombre}, {edad} años, diagnóstico: {diagnostico}")
+            registrar_log("Nuevo paciente", f"{session['usuario']} agregó a {nombre}, {edad} años, diagnóstico: {diagnostico}")
             flash('Paciente agregado exitosamente', 'success')
             return redirect(url_for('index'))
         except ValueError:
             flash('La edad debe ser un número entero', 'error')
-        except Exception as e:
-            logger.error(f"Error al agregar paciente: {e}")
-            flash('Error al agregar el paciente', 'error')
 
-        return redirect(url_for('nuevo_paciente'))
-
-    return render_template('nuevo_paciente.html')
+    diagnosticos = db.obtener_diagnosticos_unicos()
+    return render_template('nuevo_paciente.html', diagnosticos=diagnosticos)
 
 @app.route('/editar_paciente/<int:id>', methods=['GET', 'POST'])
 def editar_paciente(id):
-    try:
-        paciente = db.obtener_paciente_por_id(id)
-        if not paciente:
-            abort(404, description="Paciente no encontrado")
-    except Exception as e:
-        logger.error(f"Error obteniendo paciente con ID {id}: {e}")
-        abort(500, description="Error obteniendo datos del paciente.")
+    paciente = db.obtener_paciente_por_id(id)
+    if not paciente:
+        abort(404)
 
     if request.method == 'POST':
         nombre = request.form.get('nombre')
@@ -143,18 +135,14 @@ def editar_paciente(id):
         try:
             edad = int(edad)
             db.actualizar_paciente(id, nombre, edad, diagnostico)
-            registrar_log("Editar paciente", f"ID {id} actualizado a: {nombre}, {edad} años, diagnóstico: {diagnostico}")
+            registrar_log("Editar paciente", f"{session['usuario']} editó ID {id}: {nombre}, {edad} años, diagnóstico: {diagnostico}")
             flash('Paciente actualizado exitosamente', 'success')
             return redirect(url_for('index'))
         except ValueError:
             flash('La edad debe ser un número entero', 'error')
-        except Exception as e:
-            logger.error(f"Error al actualizar paciente con ID {id}: {e}")
-            flash('Error al actualizar el paciente', 'error')
 
-        return redirect(url_for('editar_paciente', id=id))
-
-    return render_template('editar_paciente.html', paciente=paciente)
+    diagnosticos = db.obtener_diagnosticos_unicos()
+    return render_template('editar_paciente.html', paciente=paciente, diagnosticos=diagnosticos)
 
 @app.route('/eliminar/<int:id>', methods=['GET', 'POST'])
 def eliminar_paciente(id):

@@ -129,3 +129,12 @@ def contar_pacientes_busqueda(nombre: str):
     total = cursor.fetchone()[0]
     conn.close()
     return total
+
+@handle_db_error
+def obtener_diagnosticos_unicos():
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute("SELECT DISTINCT diagnostico FROM pacientes ORDER BY diagnostico ASC")
+    resultados = [row[0] for row in cursor.fetchall()]
+    conn.close()
+    return resultados
