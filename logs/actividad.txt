@@ -7,3 +7,4 @@
 [2025-04-16 11:57:38] (Javier) Editar paciente: ID 202 actualizado a: Gamby, 46 años, diagnóstico: Tos
 [2025-04-16 12:17:30] (Javier) Nuevo paciente: Javier agregó a Javier, 27 años, diagnóstico: Malaria
 [2025-04-16 12:17:43] (Javier) Eliminar paciente: ID 204 eliminado (Javier, 27 años, Malaria)
+[2025-04-16 13:19:21] (Javier) Nuevo paciente: Javier agregó a Javier, 27 años, diagnóstico: Sarampión
