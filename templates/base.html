@@ -37,7 +37,7 @@
     {% if session.usuario %}
 <div class="text-end pe-3 pt-2">
     <span>Usuario: {{ session.usuario }}</span> |
-    <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+    <a href={{ url_for('logout') }} class="btn btn-outline-danger">Cerrar sesión</a>
 </div>
 {% endif %}
 
