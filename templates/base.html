@@ -34,6 +34,13 @@
         </div>
     </div> -->
     
+    {% if session.usuario %}
+<div class="text-end pe-3 pt-2">
+    <span>Usuario: {{ session.usuario }}</span> |
+    <a href="{{ url_for('logout') }}">Cerrar sesión</a>
+</div>
+{% endif %}
+
 
     <!-- Header -->
     <header class="bg-primary text-white text-center py-3">

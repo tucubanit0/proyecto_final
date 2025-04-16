@@ -1,23 +1,15 @@
 import sqlite3
-from typing import List, Optional, Union
+from typing import List, Optional
+from werkzeug.security import generate_password_hash
 
 DATABASE_PATH = 'data.db'
 TABLE_PACIENTES = 'Pacientes'
 TABLE_USUARIOS = 'usuario'
 
-# Column names for Pacientes table
-COLUMN_ID = 'id'
-COLUMN_NOMBRE = 'nombre'
-COLUMN_EDAD = 'edad'
-COLUMN_DIAGNOSTICO = 'diagnostico'
-
-# Column names for Usuarios table
-COLUMN_USUARIO = 'usuario'
-COLUMN_CONTRASEÑA = 'contraseña'
-
+def obtener_conexion():
+    return sqlite3.connect(DATABASE_PATH)
 
 def handle_db_error(func):
-    """Decorator to handle database errors."""
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
@@ -26,80 +18,93 @@ def handle_db_error(func):
             return None
     return wrapper
 
-
 @handle_db_error
-def init_db() -> None:
-    """Initialize the database and create tables if they don't exist."""
+def init_db():
     with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
         cursor.execute(f'''
             CREATE TABLE IF NOT EXISTS {TABLE_PACIENTES} (
-                {COLUMN_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
-                {COLUMN_NOMBRE} TEXT NOT NULL,
-                {COLUMN_EDAD} INTEGER NOT NULL,
-                {COLUMN_DIAGNOSTICO} TEXT NOT NULL
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                nombre TEXT NOT NULL,
+                edad INTEGER NOT NULL,
+                diagnostico TEXT NOT NULL
             )
         ''')
         cursor.execute(f'''
             CREATE TABLE IF NOT EXISTS {TABLE_USUARIOS} (
-                {COLUMN_ID} INTEGER PRIMARY KEY AUTOINCREMENT,
-                {COLUMN_USUARIO} TEXT NOT NULL UNIQUE,
-                {COLUMN_CONTRASEÑA} TEXT NOT NULL
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usuario TEXT NOT NULL UNIQUE,
+                contraseña TEXT NOT NULL
             )
         ''')
         conn.commit()
 
-
 @handle_db_error
-def agregar_paciente(nombre: str, edad: int, diagnostico: str) -> None:
-    """Add a new patient to the database."""
+def agregar_paciente(nombre: str, edad: int, diagnostico: str):
     with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute(f'''
-            INSERT INTO {TABLE_PACIENTES} ({COLUMN_NOMBRE}, {COLUMN_EDAD}, {COLUMN_DIAGNOSTICO})
-            VALUES (?, ?, ?)
-        ''', (nombre, edad, diagnostico))
+        cursor.execute('INSERT INTO Pacientes (nombre, edad, diagnostico) VALUES (?, ?, ?)', (nombre, edad, diagnostico))
         conn.commit()
 
+@handle_db_error
+def obtener_pacientes(limit=10, offset=0):
+    conn = obtener_conexion()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM Pacientes LIMIT ? OFFSET ?", (limit, offset))
+    pacientes = cursor.fetchall()
+    conn.close()
+    return pacientes
 
 @handle_db_error
-def obtener_pacientes() -> List[sqlite3.Row]:
-    """Retrieve all patients from the database."""
-    with sqlite3.connect(DATABASE_PATH) as conn:
-        conn.row_factory = sqlite3.Row
-        cursor = conn.cursor()
-        cursor.execute(f'SELECT * FROM {TABLE_PACIENTES}')
-        return cursor.fetchall()
-
+def contar_pacientes():
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM Pacientes")
+    total = cursor.fetchone()[0]
+    conn.close()
+    return total
 
 @handle_db_error
 def obtener_paciente_por_id(id: int) -> Optional[sqlite3.Row]:
-    """Retrieve a patient by their ID."""
     with sqlite3.connect(DATABASE_PATH) as conn:
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        cursor.execute(f'SELECT * FROM {TABLE_PACIENTES} WHERE {COLUMN_ID} = ?', (id,))
+        cursor.execute('SELECT * FROM Pacientes WHERE id = ?', (id,))
         return cursor.fetchone()
 
-
 @handle_db_error
-def actualizar_paciente(id: int, nombre: str, edad: int, diagnostico: str) -> None:
-    """Update a patient's information."""
+def actualizar_paciente(id: int, nombre: str, edad: int, diagnostico: str):
     with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute(f'''
-            UPDATE {TABLE_PACIENTES}
-            SET {COLUMN_NOMBRE} = ?, {COLUMN_EDAD} = ?, {COLUMN_DIAGNOSTICO} = ?
-            WHERE {COLUMN_ID} = ?
-        ''', (nombre, edad, diagnostico, id))
+        cursor.execute('UPDATE Pacientes SET nombre = ?, edad = ?, diagnostico = ? WHERE id = ?', (nombre, edad, diagnostico, id))
         conn.commit()
-
 
 @handle_db_error
 def eliminar_paciente(id: int) -> bool:
-    """Delete a patient from the database. Returns True if deleted, False if not found."""
     with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute(f'DELETE FROM {TABLE_PACIENTES} WHERE {COLUMN_ID} = ?', (id,))
+        cursor.execute('DELETE FROM Pacientes WHERE id = ?', (id,))
         conn.commit()
         return cursor.rowcount > 0
+
+@handle_db_error
+def obtener_usuario(usuario: str) -> Optional[sqlite3.Row]:
+    conn = obtener_conexion()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM usuario WHERE usuario = ?", (usuario,))
+    user = cursor.fetchone()
+    conn.close()
+    return user
+
+@handle_db_error
+def agregar_usuario(usuario: str, contraseña_hash: str) -> bool:
+    try:
+        with sqlite3.connect(DATABASE_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute('INSERT INTO usuario (usuario, contraseña) VALUES (?, ?)', (usuario, contraseña_hash))
+            conn.commit()
+            return True
+    except sqlite3.IntegrityError:
+        return False
