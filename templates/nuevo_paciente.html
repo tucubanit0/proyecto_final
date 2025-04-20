@@ -10,17 +10,26 @@
             <form method="post" novalidate>
                 <div class="mb-3">
                     <label for="nombre" class="form-label">Nombre</label>
-                    <input type="text" name="nombre" id="nombre" class="form-control" required placeholder="Ej: Juan Pérez">
+                    <input type="text" name="nombre" id="nombre" class="form-control" required
+                        placeholder="Ej: Juan Pérez">
                 </div>
 
                 <div class="mb-3">
                     <label for="edad" class="form-label">Edad</label>
-                    <input type="number" name="edad" id="edad" class="form-control" required min="0" max="120" placeholder="Ej: 45">
+                    <input type="number" name="edad" id="edad" class="form-control" required min="0" max="120"
+                        placeholder="Ej: 45">
                 </div>
 
                 <div class="mb-3">
-                    <label for="diagnostico" class="form-label">Diagnóstico</label>
-                    <input type="text" name="diagnostico" id="diagnostico" class="form-control" required placeholder="Ej: Hipertensión">
+                    <label for="diagnostico">Diagnóstico:</label><br>
+                    <input list="diagnosticos" name="diagnostico" id="diagnostico"
+                        value="{{ paciente[3] if paciente else '' }}" required><br>
+
+                    <datalist id="diagnosticos">
+                        {% for diag in diagnosticos %}
+                        <option value="{{ diag }}">
+                            {% endfor %}
+                    </datalist>
                 </div>
 
                 <div class="d-flex justify-content-between">

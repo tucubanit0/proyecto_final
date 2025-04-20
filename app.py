@@ -1,27 +1,26 @@
-import logging
 import os
+import logging
 from flask import Flask, request, render_template, redirect, url_for, session, flash, abort
+from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import HTTPException
-import db
 from datetime import datetime
-
-# Crear carpeta de logs si no existe
-os.makedirs('logs', exist_ok=True)
-
-# Función para registrar logs
-def registrar_log(accion, detalle):
-    ruta_log = os.path.join('logs', 'actividad.txt')
-    fecha_hora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    with open(ruta_log, 'a', encoding='utf-8') as archivo:
-        archivo.write(f"[{fecha_hora}] {accion}: {detalle}\n")
+import db
 
 # Configurar Flask
 app = Flask(__name__, template_folder='d:/clase/proyecto_final/templates')
 app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 
-# Logging general
+# Configuración de logs
+os.makedirs('logs', exist_ok=True)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+def registrar_log(accion, detalle):
+    ruta_log = os.path.join('logs', 'actividad.txt')
+    fecha_hora = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    usuario = session.get('usuario', 'Desconocido')
+    with open(ruta_log, 'a', encoding='utf-8') as archivo:
+        archivo.write(f"[{fecha_hora}] ({usuario}) {accion}: {detalle}\n")
 
 # Inicializar base de datos
 try:
@@ -30,15 +29,70 @@ except Exception as e:
     logger.error(f"Error al inicializar la base de datos: {e}")
     raise
 
-# Rutas
+@app.before_request
+def requerir_login():
+    rutas_abiertas = ['login', 'registro_usuario', 'static']
+    if not session.get('usuario') and not any(r in request.endpoint for r in rutas_abiertas):
+        return redirect(url_for('login'))
+
 @app.route('/')
 def index():
     try:
-        pacientes = db.obtener_pacientes()
-        return render_template('index.html', pacientes=pacientes)
+        por_pagina = 10
+        pagina = int(request.args.get('pagina', 1))
+        offset = (pagina - 1) * por_pagina
+        busqueda = request.args.get('buscar', '').strip()
+
+        if busqueda:
+            pacientes = db.buscar_pacientes_por_nombre(busqueda, limit=por_pagina, offset=offset)
+            total_pacientes = db.contar_pacientes_busqueda(busqueda)
+        else:
+            pacientes = db.obtener_pacientes(limit=por_pagina, offset=offset)
+            total_pacientes = db.contar_pacientes()
+
+        total_paginas = (total_pacientes + por_pagina - 1) // por_pagina
+
+        return render_template('index.html', pacientes=pacientes, pagina=pagina, total_paginas=total_paginas)
     except Exception as e:
         logger.error(f"Error al obtener pacientes: {e}")
-        return render_template('error.html', message="No se pudo obtener la información de los pacientes.")
+        return render_template('error.html', message="No se pudo obtener la lista de pacientes.")
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        usuario = request.form.get('usuario')
+        contraseña = request.form.get('contraseña')
+        user = db.obtener_usuario(usuario)
+        if user and check_password_hash(user['contraseña'], contraseña):
+            session['usuario'] = user['usuario']
+            flash('Sesión iniciada correctamente', 'success')
+            return redirect(url_for('index'))
+        flash('Credenciales inválidas', 'error')
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Sesión cerrada.', 'info')
+    return redirect(url_for('login'))
+
+@app.route('/registro', methods=['GET', 'POST'])
+def registro_usuario():
+    if request.method == 'POST':
+        usuario = request.form.get('usuario')
+        contraseña = request.form.get('contraseña')
+        if not usuario or not contraseña:
+            flash('Todos los campos son obligatorios.', 'error')
+        else:
+            hash_contraseña = generate_password_hash(contraseña)
+            exito = db.agregar_usuario(usuario, hash_contraseña)
+            if exito:
+                flash('Usuario registrado exitosamente.', 'success')
+                return redirect(url_for('login'))
+            else:
+                flash('Error: el nombre de usuario ya existe.', 'error')
+    return render_template('registro.html')
 
 @app.route('/nuevo_paciente', methods=['GET', 'POST'])
 def nuevo_paciente():
@@ -54,28 +108,20 @@ def nuevo_paciente():
         try:
             edad = int(edad)
             db.agregar_paciente(nombre, edad, diagnostico)
-            registrar_log("Nuevo paciente", f"{nombre}, {edad} años, diagnóstico: {diagnostico}")
+            registrar_log("Nuevo paciente", f"{session['usuario']} agregó a {nombre}, {edad} años, diagnóstico: {diagnostico}")
             flash('Paciente agregado exitosamente', 'success')
             return redirect(url_for('index'))
         except ValueError:
             flash('La edad debe ser un número entero', 'error')
-        except Exception as e:
-            logger.error(f"Error al agregar paciente: {e}")
-            flash('Error al agregar el paciente', 'error')
 
-        return redirect(url_for('nuevo_paciente'))
-
-    return render_template('nuevo_paciente.html')
+    diagnosticos = db.obtener_diagnosticos_unicos()
+    return render_template('nuevo_paciente.html', diagnosticos=diagnosticos)
 
 @app.route('/editar_paciente/<int:id>', methods=['GET', 'POST'])
 def editar_paciente(id):
-    try:
-        paciente = db.obtener_paciente_por_id(id)
-        if not paciente:
-            abort(404, description="Paciente no encontrado")
-    except Exception as e:
-        logger.error(f"Error obteniendo paciente con ID {id}: {e}")
-        abort(500, description="Error obteniendo datos del paciente.")
+    paciente = db.obtener_paciente_por_id(id)
+    if not paciente:
+        abort(404)
 
     if request.method == 'POST':
         nombre = request.form.get('nombre')
@@ -89,18 +135,14 @@ def editar_paciente(id):
         try:
             edad = int(edad)
             db.actualizar_paciente(id, nombre, edad, diagnostico)
-            registrar_log("Editar paciente", f"ID {id} actualizado a: {nombre}, {edad} años, diagnóstico: {diagnostico}")
+            registrar_log("Editar paciente", f"{session['usuario']} editó ID {id}: {nombre}, {edad} años, diagnóstico: {diagnostico}")
             flash('Paciente actualizado exitosamente', 'success')
             return redirect(url_for('index'))
         except ValueError:
             flash('La edad debe ser un número entero', 'error')
-        except Exception as e:
-            logger.error(f"Error al actualizar paciente con ID {id}: {e}")
-            flash('Error al actualizar el paciente', 'error')
 
-        return redirect(url_for('editar_paciente', id=id))
-
-    return render_template('editar_paciente.html', paciente=paciente)
+    diagnosticos = db.obtener_diagnosticos_unicos()
+    return render_template('editar_paciente.html', paciente=paciente, diagnosticos=diagnosticos)
 
 @app.route('/eliminar/<int:id>', methods=['GET', 'POST'])
 def eliminar_paciente(id):
@@ -112,7 +154,7 @@ def eliminar_paciente(id):
 
         if request.method == 'POST':
             db.eliminar_paciente(id)
-            registrar_log("Eliminar paciente", f"ID {id} eliminado.")
+            registrar_log("Eliminar paciente", f"ID {id} eliminado ({paciente['nombre']}, {paciente['edad']} años, {paciente['diagnostico']})")
             flash('Paciente eliminado correctamente.', 'success')
             return redirect(url_for('index'))
 

@@ -10,40 +10,24 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-
-    <style>
-        .spinner-wrapper {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.7);
-            z-index: 9999;
-            display: none;
-        }
-    </style>
 </head>
 
-<body class="bg-light d-flex flex-column min-vh-100">
+<body class="bg-light d-flex flex-column min-vh-100">    
 
-    <!-- Spinner -->
-    <!-- <div class="spinner-wrapper d-flex justify-content-center align-items-center" id="spinner">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Cargando...</span>
-        </div>
-    </div> -->
-    
+    {% if session.usuario %}
+<div class="text-end pe-3 pt-1">
+    <span>Usuario: {{ session.usuario }}</span> |
+    <a href={{ url_for('logout') }} class="btn btn-outline-danger">Cerrar sesión</a>
+</div>
+{% endif %}
+
 
     <!-- Header -->
-    <header class="bg-primary text-white text-center py-3">
+    <header class="bg-primary text-white text-center py-2">
         <h1>Gestión de Pacientes</h1>
     </header>
 
     <!-- Navbar -->
-    <!-- <p class="mb-0">
-        <a href="{{ url_for('ver_logs') }}">Ver historial</a>
-    </p> -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container-fluid d-flex justify-content-between">
             <div>
@@ -75,7 +59,7 @@
     </main>
 
     <!-- Footer -->
-    <footer class="bg-light text-center py-3 mt-auto">
+    <footer class="bg-light text-center py-1 mt-auto">
         <p class="mb-0">&copy; {{ current_year }} TuCubanit0. Todos los derechos reservados.</p>
     </footer>
 
@@ -97,48 +81,3 @@
             }
         });
     </script>
-
-    <!-- Mostrar spinner al enviar formularios -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const forms = document.querySelectorAll('form');
-            forms.forEach(form => {
-                form.addEventListener('submit', () => {
-                    document.getElementById('spinner').style.display = 'flex';
-                });
-            });
-        });
-    </script>
-
-    <!-- Mostrar spinner al hacer clic en enlaces -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const links = document.querySelectorAll('a[href]');
-            links.forEach(link => {
-                const href = link.getAttribute('href');
-                if (href && !href.startsWith('#') && !href.startsWith('javascript')) {
-                    link.addEventListener('click', function (e) {
-                        if (!e.ctrlKey && !e.metaKey && !link.target) {
-                            document.getElementById('spinner').style.display = 'flex';
-                        }
-                    });
-                }
-            });
-        });
-    </script>
-
-    <!-- Fallback por si no carga bien -->
-    <script>
-        setTimeout(() => {
-            const spinner = document.getElementById('spinner');
-            if (spinner && spinner.style.display === 'flex') {
-                spinner.style.display = 'none';
-            }
-        }, 10000);
-    </script>
-
-</body>
-
-</html>
-<!-- End of file base.html -->
-<!-- Location: templates/base.html -->
