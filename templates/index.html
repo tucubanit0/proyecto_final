@@ -5,13 +5,23 @@
 {% block content %}
 <section class="container-fluid">
     <h2 class="mb-4 text-center">Lista de Pacientes</h2>
-    <form method="GET" action="{{ url_for('index') }}" class="mb-4 d-flex justify-content-center">
-        <input type="text" name="buscar" placeholder="Buscar por nombre..." class="form-control w-50 me-2"
+    <form method="GET" action="{{ url_for('index') }}" class="mb-4 d-flex justify-content-center align-items-center gap-2 flex-wrap">
+        <input type="text" name="buscar" placeholder="Buscar..." class="form-control w-50"
             value="{{ request.args.get('buscar', '') }}">
-        <button type="submit" class="btn btn-primary">Buscar</button>
-        <a href="{{ url_for('index') }}" class="btn btn-secondary ms-2">Limpiar</a>
+
+        <select name="filtro" class="form-select w-auto">
+            <option value="nombre" {% if request.args.get('filtro', 'nombre') == 'nombre' %}selected{% endif %}>Nombre</option>
+            <option value="diagnostico" {% if request.args.get('filtro') == 'diagnostico' %}selected{% endif %}>Diagnóstico</option>
+        </select>
+
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-search"></i> Buscar
+        </button>
+
+        <a href="{{ url_for('index') }}" class="btn btn-secondary">
+            <i class="bi bi-x-circle"></i> Limpiar
+        </a>
     </form>
-    
 
     <div class="table-responsive">
         <table class="table table-bordered table-hover align-middle text-center">
@@ -51,24 +61,52 @@
     </div>
 
     <!-- PAGINACIÓN -->
-    <nav aria-label="Paginación de pacientes">
-        <ul class="pagination justify-content-center">
-            {% if pagina > 1 %}
-            <li class="page-item">
-                <a class="page-link" href="{{ url_for('index', pagina=pagina-1) }}">Anterior</a>
-            </li>
-            {% endif %}
-            {% for p in range(1, total_paginas + 1) %}
-            <li class="page-item {% if p == pagina %}active{% endif %}">
-                <a class="page-link" href="{{ url_for('index', pagina=p) }}">{{ p }}</a>
-            </li>
-            {% endfor %}
-            {% if pagina < total_paginas %} <li class="page-item">
-                <a class="page-link" href="{{ url_for('index', pagina=pagina+1) }}">Siguiente</a>
-                </li>
-                {% endif %}
-        </ul>
-    </nav>
+<nav aria-label="Paginación de pacientes">
+    <ul class="pagination justify-content-center">
+        {% if pagina > 1 %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('index', pagina=pagina-1, buscar=buscar, filtro=filtro) }}">Anterior</a>
+        </li>
+        {% endif %}
+
+        {# Calcular rango de páginas a mostrar #}
+        {% set max_paginas_mostrar = 20 %}
+        {% set mitad_rango = max_paginas_mostrar // 2 %}
+        {% set inicio = pagina - mitad_rango if pagina - mitad_rango > 1 else 1 %}
+        {% set fin = inicio + max_paginas_mostrar - 1 %}
+        {% if fin > total_paginas %}
+            {% set fin = total_paginas %}
+            {% set inicio = fin - max_paginas_mostrar + 1 if fin - max_paginas_mostrar + 1 > 1 else 1 %}
+        {% endif %}
+
+        {% if inicio > 1 %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('index', pagina=1, buscar=buscar, filtro=filtro) }}">1</a>
+        </li>
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+        {% endif %}
+
+        {% for p in range(inicio, fin + 1) %}
+        <li class="page-item {% if p == pagina %}active{% endif %}">
+            <a class="page-link" href="{{ url_for('index', pagina=p, buscar=buscar, filtro=filtro) }}">{{ p }}</a>
+        </li>
+        {% endfor %}
+
+        {% if fin < total_paginas %}
+        <li class="page-item disabled"><span class="page-link">…</span></li>
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('index', pagina=total_paginas, buscar=buscar, filtro=filtro) }}">{{ total_paginas }}</a>
+        </li>
+        {% endif %}
+
+        {% if pagina < total_paginas %}
+        <li class="page-item">
+            <a class="page-link" href="{{ url_for('index', pagina=pagina+1, buscar=buscar, filtro=filtro) }}">Siguiente</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+
 
 </section>
 {% endblock %}

@@ -22,14 +22,15 @@ def handle_db_error(func):
 def init_db():
     with sqlite3.connect(DATABASE_PATH) as conn:
         cursor = conn.cursor()
-        cursor.execute(f'''
-            CREATE TABLE IF NOT EXISTS {TABLE_PACIENTES} (
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS Pacientes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre TEXT NOT NULL,
                 edad INTEGER NOT NULL,
                 diagnostico TEXT NOT NULL
             )
         ''')
+
         cursor.execute(f'''
             CREATE TABLE IF NOT EXISTS {TABLE_USUARIOS} (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -115,7 +116,7 @@ def buscar_pacientes_por_nombre(nombre: str, limit=10, offset=0):
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     like_query = f"%{nombre}%"
-    cursor.execute("SELECT * FROM pacientes WHERE nombre LIKE ? LIMIT ? OFFSET ?", (like_query, limit, offset))
+    cursor.execute("SELECT * FROM Pacientes WHERE nombre LIKE ? LIMIT ? OFFSET ?", (like_query, limit, offset))
     resultados = cursor.fetchall()
     conn.close()
     return resultados
@@ -125,7 +126,7 @@ def contar_pacientes_busqueda(nombre: str):
     conn = obtener_conexion()
     cursor = conn.cursor()
     like_query = f"%{nombre}%"
-    cursor.execute("SELECT COUNT(*) FROM pacientes WHERE nombre LIKE ?", (like_query,))
+    cursor.execute("SELECT COUNT(*) FROM Pacientes WHERE nombre LIKE ?", (like_query,))
     total = cursor.fetchone()[0]
     conn.close()
     return total
@@ -134,7 +135,36 @@ def contar_pacientes_busqueda(nombre: str):
 def obtener_diagnosticos_unicos():
     conn = obtener_conexion()
     cursor = conn.cursor()
-    cursor.execute("SELECT DISTINCT diagnostico FROM pacientes ORDER BY diagnostico ASC")
+    cursor.execute("SELECT DISTINCT diagnostico FROM Pacientes ORDER BY diagnostico ASC")
     resultados = [row[0] for row in cursor.fetchall()]
     conn.close()
     return resultados
+
+@handle_db_error
+def buscar_pacientes_por_diagnostico(diagnostico: str, limit=10, offset=0):
+    conn = obtener_conexion()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    like_query = f"%{diagnostico}%"
+    cursor.execute('''
+        SELECT * FROM Pacientes
+        WHERE diagnostico LIKE ?
+        LIMIT ? OFFSET ?
+    ''', (like_query, limit, offset))
+    resultados = cursor.fetchall()
+    conn.close()
+    return resultados
+
+@handle_db_error
+def contar_pacientes_por_diagnostico(diagnostico: str):
+    conn = obtener_conexion()
+    cursor = conn.cursor()
+    like_query = f"%{diagnostico}%"
+    cursor.execute('''
+        SELECT COUNT(*)
+        FROM Pacientes
+        WHERE diagnostico LIKE ?
+    ''', (like_query,))
+    total = cursor.fetchone()[0]
+    conn.close()
+    return total

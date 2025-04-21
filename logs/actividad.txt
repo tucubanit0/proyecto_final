@@ -8,3 +8,9 @@
 [2025-04-16 12:17:30] (Javier) Nuevo paciente: Javier agregó a Javier, 27 años, diagnóstico: Malaria
 [2025-04-16 12:17:43] (Javier) Eliminar paciente: ID 204 eliminado (Javier, 27 años, Malaria)
 [2025-04-16 13:19:21] (Javier) Nuevo paciente: Javier agregó a Javier, 27 años, diagnóstico: Sarampión
+[2025-04-20 17:17:14] (Javier) Editar paciente: Javier editó ID 1: Jason Wood, 82 años, diagnóstico: Gripe
+[2025-04-20 17:17:25] (Javier) Eliminar paciente: ID 202 eliminado (Gamby, 46 años, Tos)
+[2025-04-20 17:17:43] (Javier) Nuevo paciente: Javier agregó a Gamby, 76 años, diagnóstico: Gripe
+[2025-04-21 17:54:09] (Javier) Nuevo paciente: Javier agregó a Javier, 989 años, diagnóstico: Asma
+[2025-04-21 17:54:23] (Javier) Editar paciente: Javier editó ID 100001: Javier, 120 años, diagnóstico: Artritis
+[2025-04-21 17:54:33] (Javier) Eliminar paciente: ID 100001 eliminado (Javier, 120 años, Artritis)
