@@ -168,3 +168,18 @@ def contar_pacientes_por_diagnostico(diagnostico: str):
     total = cursor.fetchone()[0]
     conn.close()
     return total
+
+@handle_db_error
+def obtener_cantidad_por_diagnostico():
+    conn = obtener_conexion()
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT diagnostico, COUNT(*) as cantidad
+        FROM Pacientes
+        GROUP BY diagnostico
+        ORDER BY cantidad DESC
+    ''')
+    resultados = cursor.fetchall()
+    conn.close()
+    return resultados

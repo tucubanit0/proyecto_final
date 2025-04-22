@@ -14,3 +14,9 @@
 [2025-04-21 17:54:09] (Javier) Nuevo paciente: Javier agregó a Javier, 989 años, diagnóstico: Asma
 [2025-04-21 17:54:23] (Javier) Editar paciente: Javier editó ID 100001: Javier, 120 años, diagnóstico: Artritis
 [2025-04-21 17:54:33] (Javier) Eliminar paciente: ID 100001 eliminado (Javier, 120 años, Artritis)
+[2025-04-22 11:37:41] (Javier) Nuevo paciente: Javier agregó a Javier, 27 años, diagnóstico: Fiebre
+[2025-04-22 11:37:52] (Javier) Editar paciente: Javier editó ID 100002: Javier, 27 años, diagnóstico: FIEBRE, NO ESPECIFICADA
+[2025-04-22 11:38:01] (Javier) Eliminar paciente: ID 100002 eliminado (Javier, 27 años, FIEBRE, NO ESPECIFICADA)
+[2025-04-22 12:00:43] (Javier) Nuevo paciente: Javier agregó a Olimpia, 22 años, diagnóstico: Alergia
+[2025-04-22 12:01:00] (Javier) Editar paciente: Javier editó ID 100003: Olimpia, 23 años, diagnóstico: Fiebre
+[2025-04-22 12:01:37] (Javier) Eliminar paciente: ID 100003 eliminado (Olimpia, 23 años, Fiebre)
