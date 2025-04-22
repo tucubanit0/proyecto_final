@@ -1,10 +1,14 @@
 import os
 import logging
-from flask import Flask, request, render_template, redirect, url_for, session, flash, abort
+from flask import Flask, request, render_template, redirect, url_for, session, flash, abort, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.exceptions import HTTPException
 from datetime import datetime
 import db
+import csv
+import io
+import openpyxl
+from db import obtener_pacientes
 
 # Configurar Flask
 app = Flask(__name__, template_folder='d:/clase/proyecto_final/templates')
@@ -191,6 +195,58 @@ def handle_exception(e):
         return render_template('error.html', message=e.description), e.code
     logger.error(f"Excepción no controlada: {e}")
     return render_template('error.html', message="Ha ocurrido un error inesperado."), 500
+
+@app.route('/estadisticas')
+def estadisticas():
+    try:
+        datos = db.obtener_cantidad_por_diagnostico()
+        etiquetas = [row['diagnostico'] for row in datos]
+        cantidades = [row['cantidad'] for row in datos]
+        return render_template('estadisticas.html', etiquetas=etiquetas, cantidades=cantidades)
+    except Exception as e:
+        logger.error(f"Error al cargar estadísticas: {e}")
+        flash('Error al cargar estadísticas.', 'error')
+        return redirect(url_for('index'))
+    
+
+@app.route('/exportar/csv')
+def exportar_csv():
+    pacientes = obtener_pacientes(limit=1000000)  # ajusta si necesitas más
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(['ID', 'Nombre', 'Edad', 'Diagnóstico'])  # Encabezados
+    for p in pacientes:
+        writer.writerow([p['id'], p['nombre'], p['edad'], p['diagnostico']])  # Fixed key
+    output.seek(0)
+    return send_file(io.BytesIO(output.getvalue().encode()),
+                     mimetype='text/csv',
+                     as_attachment=True,
+                     download_name='pacientes.csv')
+
+
+@app.route('/exportar/excel')
+def exportar_excel():
+    pacientes = obtener_pacientes(limit=1000000)
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = 'Pacientes'
+
+    # Encabezados
+    ws.append(['ID', 'Nombre', 'Edad', 'Diagnóstico'])
+
+    # Datos
+    for p in pacientes:
+        ws.append([p['id'], p['nombre'], p['edad'], p['diagnostico']])  # Fixed key
+
+    # Guardar en memoria
+    output = io.BytesIO()
+    wb.save(output)
+    output.seek(0)
+    return send_file(output,
+                     as_attachment=True,
+                     download_name='pacientes.xlsx',
+                     mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=int(os.getenv('PORT', 5000)), debug=os.getenv('DEBUG', 'False') == 'True')
