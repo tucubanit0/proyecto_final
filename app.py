@@ -11,7 +11,7 @@ import openpyxl
 from db import obtener_pacientes
 
 # Configurar Flask
-app = Flask(__name__, template_folder='d:/clase/proyecto_final/templates')
+app = Flask(__name__, template_folder='templates')
 app.secret_key = os.getenv('SECRET_KEY', 'default_secret_key')
 
 # Configuración de logs
